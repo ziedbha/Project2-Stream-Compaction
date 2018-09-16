@@ -7,6 +7,7 @@ namespace StreamCompaction {
     namespace Naive {
 		int* dev_bufIn;
 		int* dev_bufOut;
+
         using StreamCompaction::Common::PerformanceTimer;
         PerformanceTimer& timer()
         {
@@ -28,20 +29,6 @@ namespace StreamCompaction {
 			}
 		}
 
-		__global__ void kernInclusiveToExclusive(int n, int* g_odata, int* g_idata) {
-			int index = threadIdx.x + blockIdx.x * blockDim.x;
-			if (index >= n) {
-				return;
-			}
-
-			if (index > 0) {
-				g_odata[index] = g_idata[index - 1];
-			}
-			else {
-				g_odata[0] = 0;
-			}
-		}
-
         /**
          * Performs prefix-sum (aka scan) on idata, storing the result into odata.
          */
@@ -56,15 +43,14 @@ namespace StreamCompaction {
 			cudaMemcpy(dev_bufIn, idata, n * sizeof(int), cudaMemcpyHostToDevice);
 			checkCUDAError("CUDA Memcpy error!");
 
+			
+			dim3 numberOfBlocks((n + BLOCK_SIZE - 1) / BLOCK_SIZE);
 			timer().startGpuTimer();
-			int blockSize = 1024;
-			dim3 numberOfBlocks((n + blockSize - 1) / blockSize);
-
 			// placeholder pointers to do dual buffering
 			int* input = dev_bufIn;
 			int* output = dev_bufOut;
 			for (int i = 1; i <= ilog2ceil(n); i++) {
-				kernNaiveScan << <numberOfBlocks, blockSize >> >(n, i, output, input);
+				kernNaiveScan << <numberOfBlocks, BLOCK_SIZE >> >(n, i, output, input);
 				
 				// swap buffers
 				int* temp = output;
@@ -73,15 +59,18 @@ namespace StreamCompaction {
 
 				cudaDeviceSynchronize();
 			}
-			timer().endGpuTimer();
+			
 
 			// the above scan is inclusive --> run the conversion kernel
-			kernInclusiveToExclusive << <numberOfBlocks, blockSize >> >(n, output, input);
+			Common::kernInclusiveToExclusive << <numberOfBlocks, BLOCK_SIZE >> >(n, output, input);
+			timer().endGpuTimer();
 			if (output == dev_bufOut) {
 				cudaMemcpy(odata, dev_bufOut, n * sizeof(int), cudaMemcpyDeviceToHost);
+				checkCUDAError("CUDA Memcpy error!");
 			}
 			else {
 				cudaMemcpy(odata, dev_bufIn, n * sizeof(int), cudaMemcpyDeviceToHost);
+				checkCUDAError("CUDA Memcpy error!");
 			}
 
 			// free malloc'd device memory
