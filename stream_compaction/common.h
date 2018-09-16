@@ -12,6 +12,7 @@
 
 #define FILENAME (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #define checkCUDAError(msg) checkCUDAErrorFn(msg, FILENAME, __LINE__)
+#define BLOCK_SIZE (1024)
 
 /**
  * Check for CUDA errors; print and exit if there was a problem.
@@ -32,6 +33,8 @@ inline int ilog2ceil(int x) {
 
 namespace StreamCompaction {
     namespace Common {
+		__global__ void kernInclusiveToExclusive(int n, int* g_odata, int* g_idata);
+
         __global__ void kernMapToBoolean(int n, int *bools, const int *idata);
 
         __global__ void kernScatter(int n, int *odata,
@@ -58,6 +61,14 @@ namespace StreamCompaction {
 			    cudaEventDestroy(event_end);
 		    }
 
+			void resetCpuTimer() {
+				elapsed_time_cpu_total_milliseconds = 0.f;
+			}
+
+			void resetGpuTimer() {
+				elapsed_time_gpu_total_milliseconds = 0.f;
+			}
+
 		    void startCpuTimer()
 		    {
 			    if (cpu_timer_started) { throw std::runtime_error("CPU timer already started"); }
@@ -76,6 +87,7 @@ namespace StreamCompaction {
 			    prev_elapsed_time_cpu_milliseconds =
 				    static_cast<decltype(prev_elapsed_time_cpu_milliseconds)>(duro.count());
 
+				elapsed_time_cpu_total_milliseconds += prev_elapsed_time_cpu_milliseconds;
 			    cpu_timer_started = false;
 		    }
 
@@ -95,10 +107,11 @@ namespace StreamCompaction {
 			    if (!gpu_timer_started) { throw std::runtime_error("GPU timer not started"); }
 
 			    cudaEventElapsedTime(&prev_elapsed_time_gpu_milliseconds, event_start, event_end);
+				elapsed_time_gpu_total_milliseconds += prev_elapsed_time_gpu_milliseconds;
 			    gpu_timer_started = false;
 		    }
 
-		    float getCpuElapsedTimeForPreviousOperation() //noexcept //(damn I need VS 2015
+		    float getCpuElapsedTimeForPreviousOperation() //noexcept
 		    {
 			    return prev_elapsed_time_cpu_milliseconds;
 		    }
@@ -107,6 +120,14 @@ namespace StreamCompaction {
 		    {
 			    return prev_elapsed_time_gpu_milliseconds;
 		    }
+
+			float getGpuTotalTimeElapsed() {
+				return elapsed_time_gpu_total_milliseconds;
+			}
+
+			float getCpuTotalTimeElapsed() {
+				return elapsed_time_cpu_total_milliseconds;
+			}
 
 		    // remove copy and move functions
 		    PerformanceTimer(const PerformanceTimer&) = delete;
@@ -127,6 +148,9 @@ namespace StreamCompaction {
 
 		    float prev_elapsed_time_cpu_milliseconds = 0.f;
 		    float prev_elapsed_time_gpu_milliseconds = 0.f;
+
+			float elapsed_time_cpu_total_milliseconds = 0.f;
+			float elapsed_time_gpu_total_milliseconds = 0.f;
 	    };
     }
 }
