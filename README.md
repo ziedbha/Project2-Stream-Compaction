@@ -37,17 +37,17 @@ This algorithm has 2 phases: an upsweep (reduction) phase, and a downsweep phase
 
 ##### Upsweep
 <p align="center">
-  <img src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/efficientUpsweep.png"/>
+  <img width="600" height="350" src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/efficientUpsweep.png"/>
 </p>
 
 ##### Downsweep
 <p align="center">
-  <img  src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/efficientDownsweep.png"/>
+  <img  width="600" height="400" src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/efficientDownsweep.png"/>
 </p>
 
 ## Compact
 <p align="center">
-  <img width="400" height="200" src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/top.jpg"/>
+  <img width="435" height="357" src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/compact.png"/>
 </p>
 
 ### Input
@@ -64,4 +64,11 @@ Using scan as a building block, we can implement a parallel version of compact b
 
 For reference, I used Nvidia's [GPU Gems](https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch39.html) to implement this algorithm.
 
-Add your performance analysis (see below).
+# Performance Analysis, Q & A
+### How does a rough optimization of the block sizes of each of your implementations affect GPU run time?
+
+### Runtime of different GPU Scan implementation & CPU Scan implementation (runtime vs. array size)?
+
+### Performance bottlenecks for each implementation? Is it memory I/O? Computation? Is it different for each implementation?
+
+### Any test output?
