@@ -75,7 +75,22 @@ In both cases, thrust seems to perform the worst (disregarding the NPT cases). T
 
 ### Runtime of different GPU Scan implementation & CPU Scan implementation (runtime vs. array size)?
 
+<p align="center">
+  <img src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/arraySize.png"/>
+</p>
+
+As the array size increases, the CPU implementations seem to linearly decrease in performance. The CPU NPT implementation ends up performing the worst for array sizes > 1M. However, when array sizes are relatively small (< 250K), the CPU implementaitons seem to perform the best. The GPU overhead is not worth it in these cases. 
+For larger array sizes, Naive & Work-Efficient (power of two) perform really well compared to the thrust implementation, again probably because of timing issues. Overall, the NPT (non-power of two array sizes) implementations perform the worst as explained above (as warps aren't completely filled).
+
 ### Performance bottlenecks for each implementation? Is it memory I/O? Computation? Is it different for each implementation?
+#### CPU
+Memory & scheduling can be considered a bottleneck for the sequential CPU implementation. However, this is only apparent for really large array sizes since the CPU takes advantage of better caching for smaller array sizes.
+
+#### Naive
+Global memory access, general work-inefficiency of naive approach are an issue. Since we are not using shared memory, then the work-inefficiency is amplified in the naive approach.
+
+#### Work-efficient
+This implementation could improve dramatically if shared memory is used, since it inherently does less operations than the naive approach.
 
 ### Any test output?
 #### Scan Tests (array size = 2 ^ 14)
