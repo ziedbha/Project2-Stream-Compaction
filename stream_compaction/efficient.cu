@@ -16,29 +16,31 @@ namespace StreamCompaction {
 
 		__global__ void kernEfficientScanUpsweep(int n, int level, int* g_data) {
 			int index = threadIdx.x + blockIdx.x * blockDim.x;
+		
 			if (index >= n) {
 				return;
 			}
 
 			// up-sweep
-			int offset = (int)powf(2.0f, level + 1);
+			int offset = 1 << (level + 1);
 			int k = index * offset;
-			if (k >= 0 && k < n) {
-				int halfOffset = (int)powf(2.0f, level);
+			if (k < n) {
+				int halfOffset = 1 << level;
 				g_data[k + offset - 1] += g_data[k + halfOffset - 1];
 			}
 		}
 
 		__global__ void kernEfficientScanDownsweep(int n, int level, int* g_data) {
 			int index = threadIdx.x + blockIdx.x * blockDim.x;
+
 			if (index >= n) {
 				return;
 			}
 
-			int offset = (int)powf(2.0f, level + 1);
+			int offset = 1 << (level + 1);
 			int k = index * offset;
-			if (k >= 0 && k < n) {
-				int halfOffset = (int)powf(2.0f, level);
+			if (k < n) {
+				int halfOffset = 1 << level;
 				int temp = g_data[k + halfOffset - 1];
 				g_data[k + halfOffset - 1] = g_data[k + offset - 1];
 				g_data[k + offset - 1] += temp;
@@ -62,10 +64,11 @@ namespace StreamCompaction {
 			checkCUDAError("CUDA Memcpy error!");
 
 			timer().startGpuTimer();
-			dim3 numberOfBlocks((n + BLOCK_SIZE - 1) / BLOCK_SIZE);
+			
 
 			// upsweep
 			for (int level = 0; level < ilog2(n); level++) {
+				dim3 numberOfBlocks((n / (1 << (level + 1)) + BLOCK_SIZE - 1) / BLOCK_SIZE);
 				kernEfficientScanUpsweep << <numberOfBlocks, BLOCK_SIZE >> > (n, level, dev_bufData);
 				checkCUDAError("CUDA Upsweep error!");
 				cudaDeviceSynchronize();
@@ -76,6 +79,7 @@ namespace StreamCompaction {
 			int zero = 0;
 			cudaMemcpy(dev_bufData + n - 1, &zero, sizeof(int), cudaMemcpyHostToDevice);
 			for (int level = ilog2(n) - 1; level >= 0; level--) {
+				dim3 numberOfBlocks((n / (1 << (level + 1)) + BLOCK_SIZE - 1) / BLOCK_SIZE);
 				kernEfficientScanDownsweep << <numberOfBlocks, BLOCK_SIZE >> > (n, level, dev_bufData);
 				checkCUDAError("CUDA Downsweep error!");
 				cudaDeviceSynchronize();

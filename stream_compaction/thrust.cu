@@ -27,6 +27,7 @@ namespace StreamCompaction {
             timer().startGpuTimer();
             thrust::exclusive_scan(t_devIn.begin(), t_devIn.end(), t_devOut.begin());
             timer().endGpuTimer();
+
 			t_hostOut = t_devOut;
 
 			// copy memory from host vector --> odata

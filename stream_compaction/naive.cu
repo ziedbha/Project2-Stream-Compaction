@@ -20,7 +20,7 @@ namespace StreamCompaction {
 			if (index >= n) {
 				return;
 			}
-			int offset = (int)powf(2.0f, (float)(level - 1));
+			int offset = 1 << level - 1;
 			if (index >= offset) {
 				g_odata[index] = g_idata[index - offset] + g_idata[index];
 			}
