@@ -37,17 +37,17 @@ This algorithm has 2 phases: an upsweep (reduction) phase, and a downsweep phase
 
 ##### Upsweep
 <p align="center">
-  <img src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/efficientUpsweep.png"/>
+  <img width="600" height="350" src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/efficientUpsweep.png"/>
 </p>
 
 ##### Downsweep
 <p align="center">
-  <img  src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/efficientDownsweep.png"/>
+  <img  width="600" height="400" src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/efficientDownsweep.png"/>
 </p>
 
 ## Compact
 <p align="center">
-  <img width="400" height="200" src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/top.jpg"/>
+  <img src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/compact.png"/>
 </p>
 
 ### Input
