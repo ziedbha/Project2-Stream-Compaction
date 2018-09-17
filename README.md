@@ -7,7 +7,13 @@ CUDA Stream Compaction
   * [LinkedIn](https://www.linkedin.com/in/ziadbha/), [personal website](https://www.seas.upenn.edu/~ziadb/)
 * Tested on: Windows 10, i7-8750H @ 2.20GHz, 16GB, GTX 1060
 
+
+
 # Project Goal
+<p align="center">
+  <img src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/streamCompaction.png"/>
+</p>
+
 In this project, I implemented 2 notable parallel algorithms: Scan (Prefix Sum) & Stream Compaction. The latter algorithm is widely used as a building block for other parallel algorithms. In fact, stream compaction is used in path tracing, a project I intend to implement soon.
 
 # Features
@@ -21,7 +27,7 @@ A stream of ints `out` such that for `out[idx]`, we store the running sum of the
 ### GPU Implementation
 #### Naive
 <p align="center">
-  <img width="400" height="400" src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/naiveScanCompaction.gif"/>
+  <img src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/naiveScan.png"/>
 </p>
 
 This algorithm is based on the scan algorithm presented by Hillis and Steele (1986). However, this algorithm performs **O(n log2 n)** addition operations. In contrast, the sequential scan performs **O(n)** adds. Therefore, the naive implementation is not work-efficient. 
@@ -31,17 +37,17 @@ This algorithm has 2 phases: an upsweep (reduction) phase, and a downsweep phase
 
 ##### Upsweep
 <p align="center">
-  <img width="400" height="400" src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/efficientUpsweep.gif"/>
+  <img src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/efficientUpsweep.png"/>
 </p>
 
 ##### Downsweep
 <p align="center">
-  <img width="400" height="400" src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/efficientDownsweep.gif"/>
+  <img  src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/efficientDownsweep.png"/>
 </p>
 
 ## Compact
 <p align="center">
-  <img width="400" height="400" src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/streamCompaction.gif"/>
+  <img width="400" height="200" src="https://github.com/ziedbha/Project2-Stream-Compaction/blob/master/images/top.jpg"/>
 </p>
 
 ### Input
