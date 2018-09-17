@@ -66,9 +66,67 @@ For reference, I used Nvidia's [GPU Gems](https://developer.nvidia.com/gpugems/G
 
 # Performance Analysis, Q & A
 ### How does a rough optimization of the block sizes of each of your implementations affect GPU run time?
+| Scan with array size 250K | Scan with array size 1M | 
+| ------------- | ----------- |
+| ![](images/blockSize250K.png) | ![](images/blockSize1M.png) |
+
+In both cases, thrust seems to perform the worst (disregarding the NPT cases). This is either a timing issue given that thrust probably does some mallocs (which I did not include in my performance analysis), or simply because thrust has too much overhead and could perform better for even bigger array sizes. Naive performed better than Work-Efficient due to the lack of usage of shared memory. The overhead associated with global memory accesses for scatter and bools makes work-efficient less efficient in practice. In all cases, it seems that a block size of 256 yielded the best results, which makes sense since we have more blocks and we still fill in each warp completely. Larger block sizes mean less block count, which entail less SMs working.
+
 
 ### Runtime of different GPU Scan implementation & CPU Scan implementation (runtime vs. array size)?
 
 ### Performance bottlenecks for each implementation? Is it memory I/O? Computation? Is it different for each implementation?
 
 ### Any test output?
+#### Scan Tests (array size = 2 ^ 14)
+
+```
+    [   1   1   0   1   1   1   0   0   1   1   1   0   1 ...   1   0 ]
+==== cpu scan, power-of-two ====
+   elapsed time: 0.006029ms    (std::chrono Measured)
+    [   0   1   2   2   3   4   5   5   5   6   7   8   8 ... 2026 2027 ]
+==== cpu scan, non-power-of-two ====
+   elapsed time: 0.012058ms    (std::chrono Measured)
+    [   0   1   2   2   3   4   5   5   5   6   7   8   8 ... 2025 2025 ]
+    passed
+==== naive scan, power-of-two ====
+   elapsed time: 0.858208ms    (CUDA Measured)
+    passed
+==== naive scan, non-power-of-two ====
+   elapsed time: 1.39376ms    (CUDA Measured)
+    passed
+==== work-efficient scan, power-of-two ====
+   elapsed time: 1.04755ms    (CUDA Measured)
+    passed
+==== work-efficient scan, non-power-of-two ====
+   elapsed time: 2.08691ms    (CUDA Measured)
+    passed
+==== thrust scan, power-of-two ====
+   elapsed time: 2.89587ms    (CUDA Measured)
+    passed
+==== thrust scan, non-power-of-two ====
+   elapsed time: 2.91533ms    (CUDA Measured)
+    passed
+```
+
+#### Stream Compaction Tests (array size = 2 ^ 14)
+
+   ``` [   2   3   0   0   3   0   1   0   1   3   3   2   0 ...   3   0 ]
+==== cpu compact without scan, power-of-two ====
+   elapsed time: 0.022261ms    (std::chrono Measured)
+    [   2   3   3   1   1   3   3   2   3   2   1   3   1 ...   3   3 ]
+    passed
+==== cpu compact without scan, non-power-of-two ====
+   elapsed time: 0.032464ms    (std::chrono Measured)
+    [   2   3   3   1   1   3   3   2   3   2   1   3   1 ...   2   3 ]
+    passed
+==== cpu compact with scan ====
+   elapsed time: 0.050087ms    (std::chrono Measured)
+    [   2   3   3   1   1   3   3   2   3   2   1   3   1 ...   3   3 ]
+    passed
+==== work-efficient compact, power-of-two ====
+   elapsed time: 1.09165ms    (CUDA Measured)
+    passed
+==== work-efficient compact, non-power-of-two ====
+   elapsed time: 1.05386ms    (CUDA Measured)
+    passed ```
